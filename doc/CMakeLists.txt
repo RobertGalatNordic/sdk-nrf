@@ -40,10 +40,16 @@ if(NOT DEFINED ENV{NRFXLIB_BASE})
   set(ENV{NRFXLIB_BASE} ${NRFXLIB_BASE})
 endif()
 
+if(NOT DEFINED ENV{HOMEKIT_BASE})
+  get_filename_component(HOMEKIT_BASE ${CMAKE_CURRENT_LIST_DIR}/../../homekit/ REALPATH)
+  set(ENV{HOMEKIT_BASE} ${HOMEKIT_BASE})
+endif()
+
 message(STATUS "ZEPHYR_BASE: ${ZEPHYR_BASE}")
 message(STATUS "NRF_BASE: $ENV{NRF_BASE}")
 message(STATUS "MCUBOOT_BASE: $ENV{MCUBOOT_BASE}")
 message(STATUS "NRFXLIB_BASE: $ENV{NRFXLIB_BASE}")
+message(STATUS "HOMEKIT_BASE: $ENV{HOMEKIT_BASE}")
 
 #
 # Find programs we need (Python, Sphinx, and Doxygen)
@@ -69,6 +75,7 @@ set(ZEPHYR_BINARY_DIR ${CMAKE_BINARY_DIR}/zephyr)
 set(NRF_BINARY_DIR ${CMAKE_BINARY_DIR}/nrf)
 set(MCUBOOT_BINARY_DIR ${CMAKE_BINARY_DIR}/mcuboot)
 set(NRFXLIB_BINARY_DIR ${CMAKE_BINARY_DIR}/nrfxlib)
+set(HOMEKIT_BINARY_DIR ${CMAKE_BINARY_DIR}/homekit)
 
 # Output directory for the shared Kconfig documentation
 set(KCONFIG_BINARY_DIR ${CMAKE_BINARY_DIR}/Kconfig)
@@ -105,7 +112,7 @@ add_dependencies(zephyr html)
 # Add 'clean-zephyr', 'clean-nrf', etc., targets
 #
 
-foreach(target zephyr nrf mcuboot nrfxlib kconfig)
+foreach(target zephyr nrf mcuboot nrfxlib kconfig homekit)
   set(TARGET_BINARY_DIR ${CMAKE_BINARY_DIR}/${target})
   # Cleanup build output
   add_custom_target(
@@ -235,6 +242,7 @@ set(nrf_sphinx_environment
   ZEPHYR_RST_SRC=${ZEPHYR_BINARY_DIR}/rst/doc
   MCUBOOT_OUTPUT=${HTML_DIR}/mcuboot
   NRFXLIB_OUTPUT=${HTML_DIR}/nrfxlib
+  HOMEKIT_OUTPUT=${HTML_DIR}/homekit
 )
 
 
@@ -472,6 +480,65 @@ add_custom_target(
 )
 add_dependencies(kconfig-html kconfig-content)
 
+################################################################################
+#
+# Add homekit-related targets
+#
+set(HOMEKIT_SPHINXOPTS -d ${HOMEKIT_BINARY_DIR}/doctrees -c ${NRF_BASE}/doc/homekit ${HOMEKIT_SPHINXOPTS})
+
+set(HOMEKIT_RST_OUT ${HOMEKIT_BINARY_DIR}/rst)
+set(HOMEKIT_SPHINX_LOG ${HOMEKIT_BINARY_DIR}/sphinx.log)
+set(HOMEKIT_DOC_DIR ${HOMEKIT_BASE}/doc)
+
+# file(GLOB MDFILES ${HOMEKIT_DOC_DIR}/*.md)
+
+set(HOMEKIT_EXTRACT_CONTENT_COMMAND
+ ${CMAKE_COMMAND} -E env
+  ZEPHYR_BASE=${HOMEKIT_BASE}
+  # ZEPHYR_BUILD=${CMAKE_CURRENT_BINARY_DIR}
+  ${PYTHON_EXECUTABLE} ${ZEPHYR_BASE}/doc/scripts/extract_content.py
+  --ignore ${CMAKE_CURRENT_BINARY_DIR}
+  # "*.rst:Samples:${HOMEKIT_RST_OUT}"
+  # "*:doc:${NRF_RST_OUT}"
+  "*.rst:.:${HOMEKIT_RST_OUT}"
+  # "*.rst:doc:${HOMEKIT_RST_OUT}"
+)
+
+add_custom_target(
+  homekit-content
+
+  # Copy all files from nrf/doc/homekit to the rst folder
+  COMMAND ${HOMEKIT_EXTRACT_CONTENT_COMMAND}
+
+  # Copy all markdown files from homekit/docs to the rst folder
+  # COMMAND ${CMAKE_COMMAND} -E copy ${MDFILES} ${HOMEKIT_RST_OUT}/doc/homekit/
+
+  WORKING_DIRECTORY ${HOMEKIT_BASE}
+)
+
+add_custom_target(
+  homekit-html
+  COMMAND ${CMAKE_COMMAND} -E env
+  ZEPHYR_BASE=${ZEPHYR_BASE}
+  NRF_BASE=${NRF_BASE}
+  # NRF_OUTPUT=${HTML_DIR}/nrf
+  # NRF_RST_SRC=${NRF_RST_OUT}/doc/nrf
+  # MCUBOOT_OUTPUT=${HTML_DIR}/mcuboot
+  HOMEKIT_BUILD=${HOMEKIT_BINARY_DIR}
+  HOMEKIT_OUTPUT=${HTML_DIR}/homekit
+  HOMEKIT_RST_SRC=${HOMEKIT_RST_OUT}
+  # KCONFIG_OUTPUT=${HTML_DIR}/kconfig
+  ${SPHINXBUILD} -w ${HOMEKIT_SPHINX_LOG} -N -b html ${HOMEKIT_SPHINXOPTS} ${HOMEKIT_RST_OUT} ${HTML_DIR}/homekit
+
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+)
+add_dependencies(homekit-html homekit-content)
+
+add_custom_target(homekit)
+add_dependencies(homekit homekit-html)
+
+
+
 add_custom_target(
   build-all
   COMMAND ${CMAKE_MAKE_PROGRAM} kconfig-html
@@ -480,6 +547,7 @@ add_custom_target(
   COMMAND ${CMAKE_MAKE_PROGRAM} nrfxlib-inventory
   COMMAND ${CMAKE_MAKE_PROGRAM} nrf
   COMMAND ${CMAKE_MAKE_PROGRAM} nrfxlib
+  COMMAND ${CMAKE_MAKE_PROGRAM} homekit
 )
 
 

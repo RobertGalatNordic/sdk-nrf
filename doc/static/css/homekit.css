@@ -1,0 +1,29 @@
+/* background color top and bottom left */
+
+.wy-side-nav-search {
+ background-color: #0077c8;
+}
+
+.rst-versions .rst-current-version {
+ background-color: #0077c8;
+}
+
+/* text color navigation menu */
+
+/* l1 not selected */
+.wy-menu-vertical a {
+ color: #0077c8;
+}
+/* expanded container nodes */
+.wy-menu-vertical li.on a, .wy-menu-vertical li.current > a {
+ color: #0077c8;
+}
+/* expanded nodes, not selected */
+.wy-menu-vertical li.current a {
+ color: #0077c8;
+}
+
+/* color for numbered steps */
+div.numbered-step>h2::before, div.numbered-step>h3::before, div.numbered-step>h4::before, div.numbered-step>h5::before {
+  background: #0077c8;
+}
