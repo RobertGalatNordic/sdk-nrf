@@ -1,0 +1,6 @@
+tests:
+  nrf_rpc.serialize.client:
+    tags: nrf_rpc
+    platform_allow: native_posix
+    filter: CONFIG_NRF_RPC=y
+    depends_on: mock_nrf_rpc 
