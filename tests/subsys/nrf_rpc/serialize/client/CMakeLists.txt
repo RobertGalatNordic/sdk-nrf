@@ -18,6 +18,9 @@ target_include_directories(app PRIVATE
   ${ZEPHYR_NRF_MODULE_DIR}/include/nrf_rpc
   ${ZEPHYR_NRF_MODULE_DIR}/nrfxlib/nrf_rpc/include
   ${ZEPHYR_NRF_MODULE_DIR}/tests/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../zephyr/subsys/testsuite/ztest/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../zephyr/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../zephyr/lib/zcbor/include
   ../common
 )
 
@@ -43,6 +46,9 @@ zephyr_library_include_directories(
   ${ZEPHYR_NRF_MODULE_DIR}/include/nrf_rpc
   ${ZEPHYR_NRF_MODULE_DIR}/nrfxlib/nrf_rpc/include
   ${ZEPHYR_NRF_MODULE_DIR}/tests/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../zephyr/subsys/testsuite/ztest/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../zephyr/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../zephyr/lib/zcbor/include
   ../common
 )
 
