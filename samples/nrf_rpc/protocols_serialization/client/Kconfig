@@ -30,6 +30,11 @@ config NVS
 
 endif # SETTINGS
 
+config BT_TEST
+	bool "BLE test service"
+	help
+	 Enable Nordic GATT test BLE service.
+
 menu "Zephyr Kernel"
 source "Kconfig.zephyr"
 endmenu
